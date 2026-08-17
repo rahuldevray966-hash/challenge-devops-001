@@ -14,7 +14,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - run: pip install -r requirement.txt
+      - run: pip install -r requirements.txt
 
       - run: python -m pytest tests/ --junitxml=results.xml
 
