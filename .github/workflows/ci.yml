@@ -1,7 +1,7 @@
 name: CI
 
 on:
-  push:
+  pull_request:
     branches: [main]
 
 jobs:
@@ -9,32 +9,37 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install -r requirements.txt
+
+      - run: pip install -r requirement.txt
+
       - run: pytest tests/ --junitxml=results.xml
+
       - uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: results.xml
 
   build:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: junit-results
+
       - name: Build image
         run: docker build -t myapp:latest .
 
   deploy:
+    needs: build
     runs-on: ubuntu-latest
     env:
       REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
     steps:
       - name: Push image
         run: echo "Pushing myapp:latest using token ${REGISTRY_TOKEN:0:4}****"
+
       - name: Deploy
         run: echo "Deploying myapp:latest to production"
